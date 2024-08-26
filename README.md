@@ -1,0 +1,1 @@
+# aim-project-details
