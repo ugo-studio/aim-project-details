@@ -1,90 +1,114 @@
 # FFmpeg API (FFAPI)
 
-This API allows you to run FFmpeg commands with various customization options, including downloading files in chunks, managing job concurrency, and automating the deletion of output files after a specified TTL (Time-to-Live).
+This API allows you to run FFmpeg commands with various customization options, including downloading and uploading files in chunks, managing job concurrency, and automating the deletion of output files after a specified TTL (Time-to-Live).
 
 ## Features
+
 - **Single Job Execution**: Multiple requests with the same ID will only run one job. Subsequent requests return the saved result until the TTL expires.
-- **Chunked Downloading**: Download files in small chunks to avoid throttling (useful for YouTube).
+- **Chunked Downloading and Uploading**: Download and upload files in small chunks to avoid throttling (useful for YouTube and large files).
 - **Manual Deletion**: Option to manually delete output files before the TTL expires.
-- **Customizable Input Options**: Specify chunk size, concurrency, and use a range query for chunk fetching.
+- **Customizable Input and Output Options**: Specify chunk size, concurrency, and use a range query for chunk fetching.
+- **Constraints**: Set limitations on file sizes for inputs and outputs.
 
 ## Endpoint
+
 - **POST** `/api/exec`
 
 ## Request Body Schema
+
 ```json
 {
-  "id": "string",             // Unique identifier for the job
-  "ttl": "number",            // Time-to-Live for the job in milliseconds
-  "inputs": [                 // Array of input objects
+  "id": "string", // Unique identifier for the job
+  "ttl": "string", // Time-to-Live for the job in milliseconds
+  "commands": ["string"], // Array of FFmpeg command arguments
+  "inputs": [
+    // Array of input objects
     {
-      "url": "string",        // URL of the input file
-      "name": "string",       // Name of the input file
-      "chunkSize": "number",  // (Optional) Size of each chunk in bytes
-      "concurrent": "number", // (Optional) Number of chunks to download simultaneously
-      "params": {             // (Optional) Additional parameters for the fetch request
-        "method": "string",   // HTTP method (GET, POST, etc.)
-        "headers": {},        // Custom headers as key-value pairs
-        "body": "string",     // Request body
-        "credentials": "string", // Include credentials (e.g., 'same-origin')
-        "cache": "string",    // Cache mode (e.g., 'default', 'no-cache')
-        "mode": "string",     // Request mode (e.g., 'cors', 'no-cors')
-        "redirect": "string", // Redirect mode (e.g., 'follow', 'manual')
-        "referrerPolicy": "string" // Referrer policy (e.g., 'no-referrer')
-      },
-      "chunkWithQuery": "boolean" // (Optional) Fetch chunks using a range query (default: 'false')
+      "name": "string", // Name of the input file
+      "url": "string", // URL of the input file
+      "chunkSize": "number", // (Optional) Size of each chunk in bytes (minimum 1KB)
+      "queueSize": "number", // (Optional) Number of chunks to download simultaneously
+      "chunkWithQuery": "boolean", // (Optional) Fetch chunks using a range query (default: false)
+      "params": {} // (Optional) Additional HTTP request parameters
     }
   ],
-  "command": ["string"],      // Array of FFmpeg command arguments
-  "outputs": ["string"]       // Array of output file names
+  "outputs": [
+    // Array of output objects
+    {
+      "name": "string", // Name of the output file
+      "chunkSize": "number", // (Optional) Size of each chunk in bytes for upload (minimum 5MB, default 30MB)
+      "queueSize": "number", // (Optional) Number of chunks to upload simultaneously (default: 6)
+      "CDNCaching": "boolean", // (Optional) Enable caching for output URL (default: true)
+      "downloadName": "string" // (Optional) Set download filename for the output URL
+    }
+  ],
+  "constraints": {
+    // (Optional) Constraints for file sizes
+    "single_input_file_size": "number",
+    "single_output_file_size": "number",
+    "total_inputs_file_size": "number",
+    "total_outputs_file_size": "number"
+  }
 }
 ```
 
 ### Example Request Body
+
 ```json
 {
-  "id": "sample-job", 
-  "ttl": 180000,             // expire in 3 minutes
+  "id": "sample-job",
+  "ttl": "180000", // expire in 3 minutes
+  "commands": [
+    "-i",
+    "video.mp4", // File name from inputs
+    "-c",
+    "copy",
+    "output.mp4"
+  ],
   "inputs": [
     {
-      "url": "https://example.com/video.mp4", 
       "name": "video.mp4",
+      "url": "https://example.com/video.mp4",
       "chunkSize": 1048576, // Downloads in 1MB chunks
-      "concurrent": 4,      // Downloads 4 chunks at thesame time
+      "queueSize": 4, // Downloads 4 chunks at the same time
+      "chunkWithQuery": false,
       "params": {
-        "method": "GET", 
-      },
-      "chunkWithQuery": false
+        "method": "GET"
+      }
     }
-  ], 
-  "command": [
-    "-i", 
-    "video.mp4",            // File name from inputs
-    "-c", 
-    "copy", 
-    "output.mp4"
-  ], 
+  ],
   "outputs": [
-    "output.mp4"            // If your ffmpeg command generates multiple outputs, add it here, so it will be uploaded
-  ]
+    {
+      "name": "output.mp4",
+      "chunkSize": 31457280, // Uploads in 30MB chunks
+      "queueSize": 6, // Uploads 6 chunks at the same time
+      "CDNCaching": true,
+      "downloadName": "processed_video.mp4"
+    }
+  ],
+  "constraints": {
+    "single_output_file_size": 1073741824 // 1GB limit for single output file
+  }
 }
 ```
 
 ## Response Body Schema
+
 ```json
 {
-  "success": "boolean",          // Indicates if the operation was successful
-  "msg": "string",               // Response message
+  "success": "boolean", // Indicates if the operation was successful
+  "msg": "string", // Response message
   "result": {
-    "processingTime": "number",  // Time taken to process the command (in milliseconds)
-    "ffmpegLogs": "string",      // Detailed FFmpeg logs
-    "ttl": "string",             // Expiration time in ISO format
-    "outputs": [                 // Array of output files
+    "processingTime": "number", // Time taken to process the command (in milliseconds)
+    "ffmpegLogs": "string", // Detailed FFmpeg logs
+    "ttl": "string", // Expiration time in ISO format
+    "outputs": [
+      // Array of output files
       {
-        "name": "string",        // Name of the output file
-        "size": "number",        // Size of the output file in bytes
-        "url": "string",         // URL to access the output file
-        "deleteUrl": "string"    // URL to delete the output file
+        "name": "string", // Name of the output file
+        "size": "number", // Size of the output file in bytes
+        "url": "string", // URL to access the output file
+        "deleteUrl": "string" // URL to delete the output file
       }
     ]
   }
@@ -92,6 +116,7 @@ This API allows you to run FFmpeg commands with various customization options, i
 ```
 
 ### Example Response Body
+
 ```json
 {
   "success": true,
@@ -111,55 +136,68 @@ This API allows you to run FFmpeg commands with various customization options, i
   }
 }
 ```
+
 ##
+
 ##
+
 ##
+
+##
+
 ## Example Usages
 
-### 1. Normal Example
-Download a video file, transcode it, and save the output.
+### 1. Joining Audio and Video (YOUTUBE)
+
+Combine an audio file and a video file, specifically from youtube
+
 ```json
 {
-  "id": "normal-example",
-  "ttl": 3600000, 
+  "id": "dbHkdVhuK_1080p",
+  "ttl": 3600000,
   "inputs": [
     {
-      "url": "https://example.com/video.mp4",
-      "name": "video.mp4"
+      "chunkSize": 8961472,
+      "queueSize": 8,
+      "chunkWithQuery": true,
+      "name": "video.mp4",
+      "url": "https://redirector.googlevideo.com/videoplayback"
+    },
+    {
+      "chunkSize": 8961472,
+      "queueSize": 8,
+      "chunkWithQuery": true,
+      "name": "audio.m4a",
+      "url": "https://redirector.googlevideo.com/videoplayback"
     }
-  ], 
-  "command": [
+  ],
+  "commands": [
     "-i",
     "video.mp4",
-    "-c:v",
-    "libx264",
-    "-crf",
-    "20",
+    "-i",
+    "audio.m4a",
+    "-c",
+    "copy",
     "output.mp4"
-  ], 
+  ],
   "outputs": [
-    "output.mp4"
+    {
+      "name": "output.mp4",
+      "downloadName": "combined_video_audio.mp4"
+    }
   ]
 }
 ```
 
-### 2. Joining Audio and Video 
+### 2. Joining Audio and Video
+
 Combine an audio file and a video file without reencoding (copy streams).
+
 ```json
 {
   "id": "join-example",
-  "ttl": 3600000,
-  "inputs": [
-    {
-      "url": "https://example.com/video.mp4",
-      "name": "video.mp4"
-    },
-    {
-      "url": "https://example.com/audio.aac",
-      "name": "audio.aac"
-    }
-  ], 
-  "command": [
+  "ttl": "3600000",
+  "commands": [
     "-i",
     "video.mp4",
     "-i",
@@ -170,60 +208,113 @@ Combine an audio file and a video file without reencoding (copy streams).
     "copy",
     "output.mp4"
   ],
+  "inputs": [
+    {
+      "name": "video.mp4",
+      "url": "https://example.com/video.mp4"
+    },
+    {
+      "name": "audio.aac",
+      "url": "https://example.com/audio.aac"
+    }
+  ],
   "outputs": [
-    "output.mp4"
+    {
+      "name": "output.mp4",
+      "chunkSize": 52428800,
+      "queueSize": 4,
+      "CDNCaching": true,
+      "downloadName": "combined_video_audio.mp4"
+    }
   ]
 }
 ```
 
-### 3. Extract Video Stream 
+### 3. Extract Video Stream
+
 Extract the video stream only, without reencoding it.
+
 ```json
 {
   "id": "extract-video-example",
-  "ttl": 3600000,
+  "ttl": "3600000",
+  "commands": ["-i", "video.mp4", "-an", "-c:v", "copy", "output.mp4"],
   "inputs": [
     {
-      "url": "https://example.com/video.mp4",
-      "name": "video.mp4"
+      "name": "video.mp4",
+      "url": "https://example.com/video.mp4"
     }
   ],
-  "command": [
-    "-i",
-    "video.mp4",
-    "-an",          // Disable audio
-    "-c:v",
-    "copy",
-    "output.mp4"
-  ],
   "outputs": [
-    "output.mp4"
+    {
+      "name": "output.mp4",
+      "chunkSize": 20971520,
+      "queueSize": 5,
+      "CDNCaching": false,
+      "downloadName": "video_only.mp4"
+    }
   ]
 }
 ```
 
-### 4. Extract Audio Stream 
+### 4. Extract Audio Stream
+
 Extract the audio stream only, without reencoding it.
+
 ```json
 {
   "id": "extract-audio-example",
-  "ttl": 3600000,
+  "ttl": "3600000",
+  "commands": ["-i", "video.mp4", "-vn", "-c:a", "copy", "output.aac"],
   "inputs": [
     {
-      "url": "https://example.com/video.mp4",
-      "name": "video.mp4"
+      "name": "video.mp4",
+      "url": "https://example.com/video.mp4"
     }
   ],
-  "command": [
+  "outputs": [
+    {
+      "name": "output.aac",
+      "chunkSize": 10485760,
+      "queueSize": 3,
+      "CDNCaching": true,
+      "downloadName": "audio_only.aac"
+    }
+  ]
+}
+```
+
+### 5. Normal Example
+
+Download a video file, transcode it, and save the output.
+
+```json
+{
+  "id": "normal-example",
+  "ttl": "3600000",
+  "commands": [
     "-i",
     "video.mp4",
-    "-vn",          // Disable video
-    "-c:a",
-    "copy",
-    "output.aac"
+    "-c:v",
+    "libx264",
+    "-crf",
+    "20",
+    "output.mp4"
+  ],
+  "inputs": [
+    {
+      "name": "video.mp4",
+      "url": "https://example.com/video.mp4"
+    }
   ],
   "outputs": [
-    "output.aac"
+    {
+      "name": "output.mp4",
+      "chunkSize": 31457280,
+      "queueSize": 6,
+      "CDNCaching": true,
+      "downloadName": "transcoded_video.mp4"
+    }
   ]
 }
 ```
@@ -231,3 +322,4 @@ Extract the audio stream only, without reencoding it.
 ---
 
 This documentation should give you a thorough understanding of how to use your API, covering all essential details, example requests, and common use cases. If there’s anything more specific you’d like to add or adjust, let me know!
+
