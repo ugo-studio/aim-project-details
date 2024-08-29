@@ -29,7 +29,14 @@ This API allows you to run FFmpeg commands with various customization options, i
       "chunkSize": "number", // (Optional) Size of each chunk in bytes (minimum 1KB)
       "queueSize": "number", // (Optional) Number of chunks to download simultaneously
       "chunkWithQuery": "boolean", // (Optional) Fetch chunks using a range query (default: false)
-      "params": {} // (Optional) Additional HTTP request parameters
+      "useProxy": "boolean", // (Optional) Use proxies to download file (default: true)
+      "timeout": "number", // (Optional) Time limit for downloading file in milliseconds (default: 60000; 1 minute)
+      "params": {
+        // (Optional) Additional HTTP request parameters
+        "method": "string", // (Optional) GET, POST, HEAD etc (default: GET)
+        "headers": "object", // (Optional) HTTP headers
+        "data": "string" // (Optional) HTTP request data
+      }
     }
   ],
   "outputs": [
@@ -72,8 +79,13 @@ This API allows you to run FFmpeg commands with various customization options, i
       "chunkSize": 1048576, // Downloads in 1MB chunks
       "queueSize": 4, // Downloads 4 chunks at the same time
       "chunkWithQuery": false,
+      "useProxy": true,
       "params": {
-        "method": "GET"
+        "method": "POST",
+        "headers": {
+          "Authorization": "Bearer key"
+        },
+        "data": "hello world!"
       }
     }
   ],
@@ -322,4 +334,3 @@ Download a video file, transcode it, and save the output.
 ---
 
 This documentation should give you a thorough understanding of how to use your API, covering all essential details, example requests, and common use cases. If there’s anything more specific you’d like to add or adjust, let me know!
-
