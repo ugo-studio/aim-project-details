@@ -35,7 +35,7 @@ This API allows you to run FFmpeg commands with various customization options, i
         // (Optional) Additional HTTP request parameters
         "method": "string", // (Optional) GET, POST, HEAD etc (default: GET)
         "headers": "object", // (Optional) HTTP headers
-        "data": "string" // (Optional) HTTP request data
+        "body": "string" // (Optional) HTTP request data
       }
     }
   ],
@@ -85,7 +85,7 @@ This API allows you to run FFmpeg commands with various customization options, i
         "headers": {
           "Authorization": "Bearer key"
         },
-        "data": "hello world!"
+        "body": "hello world!"
       }
     }
   ],
