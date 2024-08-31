@@ -19,7 +19,7 @@ This API allows you to run FFmpeg commands with various customization options, i
 ```json
 {
   "id": "string", // Unique identifier for the job
-  "ttl": "string", // Time-to-Live for the job in milliseconds
+  "ttl": "number", // Time-to-Live for the job in milliseconds
   "commands": ["string"], // Array of FFmpeg command arguments
   "inputs": [
     // Array of input objects
@@ -64,7 +64,7 @@ This API allows you to run FFmpeg commands with various customization options, i
 ```json
 {
   "id": "sample-job",
-  "ttl": "180000", // expire in 3 minutes
+  "ttl": 180000, // expire in 3 minutes
   "commands": [
     "-i",
     "video.mp4", // File name from inputs
@@ -210,7 +210,7 @@ Combine an audio file and a video file without reencoding (copy streams).
 ```json
 {
   "id": "join-example",
-  "ttl": "3600000",
+  "ttl": 3600000,
   "commands": [
     "-i",
     "video.mp4",
@@ -251,7 +251,7 @@ Extract the video stream only, without reencoding it.
 ```json
 {
   "id": "extract-video-example",
-  "ttl": "3600000",
+  "ttl": 3600000,
   "commands": ["-i", "video.mp4", "-an", "-c:v", "copy", "output.mp4"],
   "inputs": [
     {
@@ -278,7 +278,7 @@ Extract the audio stream only, without reencoding it.
 ```json
 {
   "id": "extract-audio-example",
-  "ttl": "3600000",
+  "ttl": 3600000,
   "commands": ["-i", "video.mp4", "-vn", "-c:a", "copy", "output.aac"],
   "inputs": [
     {
@@ -305,7 +305,7 @@ Download a video file, transcode it, and save the output.
 ```json
 {
   "id": "normal-example",
-  "ttl": "3600000",
+  "ttl": 3600000,
   "commands": [
     "-i",
     "video.mp4",
