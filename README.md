@@ -171,14 +171,16 @@ Combine an audio file and a video file, specifically from youtube
     {
       "chunkSize": 8961472,
       "queueSize": 8,
-      "chunkWithQuery": true,
+      "chunkWithQuery": false,
+      "useProxy": true,
       "name": "video.mp4",
       "url": "https://redirector.googlevideo.com/videoplayback"
     },
     {
       "chunkSize": 8961472,
       "queueSize": 8,
-      "chunkWithQuery": true,
+      "chunkWithQuery": false,
+      "useProxy": true,
       "name": "audio.m4a",
       "url": "https://redirector.googlevideo.com/videoplayback"
     }
