@@ -30,11 +30,11 @@ This API allows you to run FFmpeg commands with various customization options, i
       "queueSize": "number", // (Optional) Number of chunks to download simultaneously
       "chunkWithQuery": "boolean", // (Optional) Fetch chunks using a range query (default: false)
 
-      // (Optional) Size of file in bytes. By default, size is gotten by making a `HEAD` request to the url. 
+      // (Optional) Size of file in bytes. By default, size is gotten by making a `HEAD` request to the url.
       // Use this option if url doesn't support `HEAD` requests or doesn't return a 'Content-Length' Header, but you want to use the `chunkSize` feature.
       "contentLength": "number",
 
-      "useProxy": "boolean", // (Optional) Use proxies to download file (default: true)
+      "useProxy": "boolean | string", // (Optional) If true, use proxies to download file. You can also set your own proxy in this format: user:password@ip:port. (default: true)
       "timeout": "number", // (Optional) Time limit for downloading file in milliseconds (default: 60000; 1 minute)
       "params": {
         // (Optional) Additional HTTP request parameters
