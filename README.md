@@ -10,7 +10,7 @@ This API allows you to run FFmpeg commands with various customization options, i
 - **Customizable Input and Output Options**: Specify chunk size, concurrency, and use a range query for chunk fetching.
 - **Constraints**: Set limitations on file sizes for inputs and outputs.
 
-## Endpoint
+## Endpoint (main)
 
 - **POST** `/api/exec`
 
@@ -150,6 +150,35 @@ This API allows you to run FFmpeg commands with various customization options, i
         "deleteUrl": "https://example.com/storage/output.mp4?delete"
       }
     ]
+  }
+}
+```
+
+## Endpoint (get job progress)
+
+- **POST** `/api/progress`
+
+## Request Body Schema
+
+```json
+{
+  "id": "string" // Unique identifier for the job
+}
+```
+
+## Response body schema
+
+```json
+{
+  "success": "boolean", // Indicates if request was successful
+  "msg": "string", // response message
+  "result": {
+    "progress": "number", // progress of the job (0-100)
+    "info": {
+      "totalSize": "number", // total number of bytes to be downloaded and uploaded
+      "downloadedSize": "number", // number of downloaded bytes
+      "uploadedSize": "number" // number of uploaded bytes
+    }
   }
 }
 ```
