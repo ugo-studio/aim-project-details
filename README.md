@@ -156,17 +156,15 @@ This API allows you to run FFmpeg commands with various customization options, i
 
 ## Endpoint (get job progress)
 
-- **POST** `/api/progress`
+- **GET** `/api/progress/:JOB_ID`
+- **WSS** `/api/progress/:JOB_ID?ws`
 
-## Request Body Schema
+### Example request urls:
 
-```json
-{
-  "id": "string" // Unique identifier for the job
-}
-```
+- **GET** `https://<domain>/api/progress/sample-job`
+- **WSS** `wss://<domain>/api/progress/sample-job?ws`
 
-## Response body schema
+### Response body schema
 
 ```json
 {
