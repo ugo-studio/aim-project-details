@@ -156,13 +156,17 @@ This API allows you to run FFmpeg commands with various customization options, i
 
 ## Endpoint (get job progress)
 
-- **GET** `/api/progress/:JOB_ID`
-- **WSS** `/api/progress/:JOB_ID?ws`
+- **GET** `/info/progress/:JOB_ID?apiKey=<key>`
+- **WSS** `/info/progress/:JOB_ID?apiKey=<key>&ws`
 
 ### Example request urls:
 
-- **GET** `https://<domain>/api/progress/sample-job`
-- **WSS** `wss://<domain>/api/progress/sample-job?ws`
+- **GET** `https://<domain>/info/progress/sample-job?apiKey=my-api-key`
+- **WSS** `wss://<domain>/info/progress/sample-job?apiKey=my-api-key&ws`
+
+PS:
+
+- Don't add the `Bearer ` prefix to the apiKey.
 
 ### Response body schema
 
