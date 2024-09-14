@@ -20,7 +20,7 @@ This API allows you to run FFmpeg commands with various customization options, i
 {
   "id": "string", // Unique identifier for the job
   "ttl": "number", // Time-to-Live for the job in milliseconds
-  "commands": ["string"], // Array of FFmpeg command arguments
+  "commands": ["string"] | "string", // Array of FFmpeg command arguments or presets e.g(join, extract_audio, extract_video, upload)
   "inputs": [
     // Array of input objects
     {
@@ -109,6 +109,20 @@ This API allows you to run FFmpeg commands with various customization options, i
 }
 ```
 
+To use presets, set the `commands` parameter of the request body to any of these following:
+
+- `join`: add media files together
+- `extract_audio`: exract audio from a video file
+- `extract_video`: exract only video from a video file
+- `upload`: upload to cloud without any processing
+
+```json
+{
+  ...
+  "commands": "join" // is thesame as `["-i","in.mp4","-c","copy","out.mp4"]`
+}
+```
+
 ## Response Body Schema
 
 ```json
@@ -156,13 +170,13 @@ This API allows you to run FFmpeg commands with various customization options, i
 
 ## Endpoint (get job progress)
 
-- **GET** `/info/progress/:JOB_ID?apiKey=<key>`
-- **WSS** `/info/progress/:JOB_ID?apiKey=<key>&ws`
+- **GET** `/info/progress/:JOB_ID`
+- **WSS** `/info/progress/:JOB_ID?&ws`
 
 ### Example request urls:
 
-- **GET** `https://<domain>/info/progress/sample-job?apiKey=my-api-key`
-- **WSS** `wss://<domain>/info/progress/sample-job?apiKey=my-api-key&ws`
+- **GET** `https://<domain>/info/progress/sample-job`
+- **WSS** `wss://<domain>/info/progress/sample-job?ws`
 
 PS:
 
