@@ -18,47 +18,183 @@ This API allows you to run FFmpeg commands with various customization options, i
 
 ```json
 {
-  "id": "string", // Unique identifier for the job
-  "ttl": "number", // Time-to-Live for the job in milliseconds
-  "commands": ["string"] | "string", // Array of FFmpeg command arguments or presets e.g(join, extract_audio, extract_video, upload)
-  "inputs": [
-    // Array of input objects
-    {
-      "name": "string", // Name of the input file
-      "url": "string", // URL of the input file
-      "chunkSize": "number", // (Optional) Size of each chunk in bytes (minimum 1KB)
-      "queueSize": "number", // (Optional) Number of chunks to download simultaneously
-      "chunkWithQuery": "boolean", // (Optional) Fetch chunks using a range query (default: false)
+  /**
+   * Unique identifier for the job.
+   * @type {string}
+   */
+  "id": "string",
 
-      // (Optional) Size of file in bytes. By default, size is gotten by making a `HEAD` request to the url.
-      // Use this option if url doesn't support `HEAD` requests or doesn't return a 'Content-Length' Header, but you want to use the `chunkSize` feature.
+  /**
+   * Time-to-Live for the job in milliseconds.
+   * @type {number}
+   */
+  "ttl": "number",
+
+  /**
+   * Array of FFmpeg command arguments or presets.
+   * Examples: "join", "extract_audio", "extract_video", "upload".
+   * @type {string[] | string}
+   */
+  "commands": ["string"] | "string",
+
+  /**
+   * Array of input objects.
+   * @type {Object[]}
+   */
+  "inputs": [
+    {
+      /**
+       * Name of the input file.
+       * @type {string}
+       */
+      "name": "string",
+
+      /**
+       * URL of the input file.
+       * @type {string}
+       */
+      "url": "string",
+
+      /**
+       * (Optional) Size of each chunk in bytes (minimum 1KB).
+       * @type {number}
+       */
+      "chunkSize": "number",
+
+      /**
+       * (Optional) Number of chunks to download simultaneously.
+       * @type {number}
+       */
+      "queueSize": "number",
+
+      /**
+       * (Optional) Fetch chunks using a range query (default: false).
+       * @type {boolean}
+       */
+      "chunkWithQuery": "boolean",
+
+      /**
+       * (Optional) Size of the file in bytes. Use this option if the URL
+       * doesn't support `HEAD` requests or doesn't return a 'Content-Length'
+       * header, but you still want to use the `chunkSize` feature.
+       * By default, the size is fetched using a `HEAD` request.
+       * @type {number}
+       */
       "contentLength": "number",
 
-      "useProxy": "boolean | string", // (Optional) If true, use proxies to download file. You can also set your own proxy in this format: user:password@ip:port. (default: true)
-      "timeout": "number", // (Optional) Time limit for downloading file in milliseconds (default: 60000; 1 minute)
+      /**
+       * (Optional) If true, use proxies to download the file.
+       * You can also set your own proxy in this format: user:password@ip:port.
+       * (default: true).
+       * @type {boolean | string}
+       */
+      "useProxy": "boolean | string",
+
+      /**
+       * (Optional) Determines the mode of proxy usage.
+       * - "USE_PROXY_ON_FAIL": First tries downloading with normal internet. On failure, retries using a proxy.
+       * - "USE_NORMAL_ON_FAIL": First tries downloading using a proxy. On failure, retries with normal internet.
+       * @type {"USE_PROXY_ON_FAIL" | "USE_NORMAL_ON_FAIL"}
+       */
+      "proxyMode": "USE_PROXY_ON_FAIL" | "USE_NORMAL_ON_FAIL",
+
+      /**
+       * (Optional) Time limit for downloading file in milliseconds (default: 180000; 3 minutes).
+       * @type {number}
+       */
+      "timeout": "number",
+
+      /**
+       * (Optional) Additional HTTP request parameters.
+       * @type {Object}
+       */
       "params": {
-        // (Optional) Additional HTTP request parameters
-        "method": "string", // (Optional) GET, POST, HEAD etc (default: GET)
-        "headers": "object", // (Optional) HTTP headers
-        "body": "string" // (Optional) HTTP request data
+        /**
+         * (Optional) HTTP request method. Defaults to "GET".
+         * @type {string}
+         */
+        "method": "string",
+
+        /**
+         * (Optional) HTTP headers for the request.
+         * @type {Object}
+         */
+        "headers": "object",
+
+        /**
+         * (Optional) HTTP request body data.
+         * @type {string}
+         */
+        "body": "string"
       }
     }
   ],
+
+  /**
+   * Array of output objects.
+   * @type {Object[]}
+   */
   "outputs": [
-    // Array of output objects
     {
-      "name": "string", // Name of the output file
-      "chunkSize": "number", // (Optional) Size of each chunk in bytes for upload (minimum 5MB, default 30MB)
-      "queueSize": "number", // (Optional) Number of chunks to upload simultaneously (default: 6)
-      "CDNCaching": "boolean", // (Optional) Enable caching for output URL (default: true)
-      "downloadName": "string" // (Optional) Set download filename for the output URL
+      /**
+       * Name of the output file.
+       * @type {string}
+       */
+      "name": "string",
+
+      /**
+       * (Optional) Size of each chunk in bytes for upload (minimum 5MB, default 30MB).
+       * @type {number}
+       */
+      "chunkSize": "number",
+
+      /**
+       * (Optional) Number of chunks to upload simultaneously (default: 6).
+       * @type {number}
+       */
+      "queueSize": "number",
+
+      /**
+       * (Optional) Enable CDN caching for the output URL (default: true).
+       * @type {boolean}
+       */
+      "CDNCaching": "boolean",
+
+      /**
+       * (Optional) Set the download filename for the output URL.
+       * @type {string}
+       */
+      "downloadName": "string"
     }
   ],
+
+  /**
+   * (Optional) Constraints for file sizes.
+   * @type {Object}
+   */
   "constraints": {
-    // (Optional) Constraints for file sizes
+    /**
+     * (Optional) Maximum size of a single input file in bytes.
+     * @type {number}
+     */
     "single_input_file_size": "number",
+
+    /**
+     * (Optional) Maximum size of a single output file in bytes.
+     * @type {number}
+     */
     "single_output_file_size": "number",
+
+    /**
+     * (Optional) Maximum total size of all input files in bytes.
+     * @type {number}
+     */
     "total_inputs_file_size": "number",
+
+    /**
+     * (Optional) Maximum total size of all output files in bytes.
+     * @type {number}
+     */
     "total_outputs_file_size": "number"
   }
 }
@@ -193,7 +329,8 @@ PS:
     "info": {
       "totalSize": "number", // total number of bytes to be downloaded and uploaded
       "downloadedSize": "number", // number of downloaded bytes
-      "uploadedSize": "number" // number of uploaded bytes
+      "uploadedSize": "number", // number of uploaded bytes
+      "status": "NOT_FOUND" | "RUNNING" | "DONE" // shows job status
     }
   }
 }
