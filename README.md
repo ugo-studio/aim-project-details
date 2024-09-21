@@ -330,7 +330,7 @@ PS:
       "totalSize": "number", // total number of bytes to be downloaded and uploaded
       "downloadedSize": "number", // number of downloaded bytes
       "uploadedSize": "number", // number of uploaded bytes
-      "status": "NOT_FOUND" | "RUNNING" | "DONE" // shows job status
+      "status": "NOT_FOUND | RUNNING | DONE" // shows job status
     }
   }
 }
